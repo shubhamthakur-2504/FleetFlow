@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Search, Play, CheckSquare, XSquare, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Menu, X, Search, Play, CheckSquare, XSquare, Trash2, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import NewTripForm from "@/components/NewTripForm";
@@ -9,7 +10,18 @@ import { driverApi } from "@/lib/driver";
 import { authApi } from "@/lib/auth";
 
 export default function TripDispatcher() {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      navigate('/login');
+    }
+  };
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("id");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -246,12 +258,21 @@ export default function TripDispatcher() {
         </nav>
 
         {/* Toggle Button */}
-        <div className="p-4 border-t border-slate-700">
+        <div className="p-4 border-t border-slate-700 space-y-2">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-slate-800 transition-colors"
           >
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+          >
+            <LogOut size={20} />
+            {sidebarOpen && <span className="text-sm">Logout</span>}
           </button>
         </div>
       </div>
