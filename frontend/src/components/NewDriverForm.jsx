@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 
-export const NewDriverForm = ({ isOpen, onClose, onSubmit, editingDriver = null }) => {
+export const NewDriverForm = ({ isOpen, onClose, onSubmit, editingDriver = null, externalError = null }) => {
   const [formData, setFormData] = useState({
     name: '',
     licenseNumber: '',
@@ -73,9 +73,9 @@ export const NewDriverForm = ({ isOpen, onClose, onSubmit, editingDriver = null 
           </button>
         </div>
 
-        {error && (
+        {(error || externalError) && (
           <div className="mb-4 p-3 bg-red-900/20 border border-red-500/50 rounded text-red-300 text-sm">
-            {error}
+            {error || externalError}
           </div>
         )}
 
@@ -117,7 +117,7 @@ export const NewDriverForm = ({ isOpen, onClose, onSubmit, editingDriver = null 
           {/* Expiry Date */}
           <div>
             <Label htmlFor="expiryDate" className="text-slate-300 text-sm font-medium">
-              Expiry <span className="text-red-500">*</span>
+              License Expiry <span className="text-red-500">*</span>
             </Label>
             <Input
               id="expiryDate"
@@ -125,10 +125,11 @@ export const NewDriverForm = ({ isOpen, onClose, onSubmit, editingDriver = null 
               type="text"
               value={formData.expiryDate}
               onChange={handleChange}
-              placeholder="MM/YY"
+              placeholder="MM/YY (e.g., 01/26 for Jan 2026)"
               className="mt-1 bg-slate-700 border-slate-600 text-slate-100"
               required
             />
+            <p className="text-xs text-slate-400 mt-1">Format: MM/YY (must be a future date)</p>
           </div>
 
           {/* Status */}

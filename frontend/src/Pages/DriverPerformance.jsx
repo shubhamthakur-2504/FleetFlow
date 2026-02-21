@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Search, Plus, Edit2, Trash2, LogOut } from 'lucide-react';
+import { Menu, X, Search, Plus, Edit2, Trash2, LogOut, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewDriverForm } from '@/components/NewDriverForm';
@@ -82,7 +82,12 @@ export default function DriverPerformance() {
       setIsFormOpen(false);
     } catch (err) {
       console.error('Error saving driver:', err);
-      setError('Failed to save driver. Please try again.');
+      // Get error message from API response or error message
+      const errorMessage = 
+        err.response?.data?.message || 
+        err.message || 
+        'Failed to save driver. Please check your input and try again.';
+      setError(errorMessage);
     }
   };
 
@@ -133,6 +138,22 @@ export default function DriverPerformance() {
     if (scoreNum >= 90) return 'text-green-400';
     if (scoreNum >= 80) return 'text-yellow-400';
     return 'text-red-400';
+  };
+
+  const isLicenseExpired = (expiryDate) => {
+    if (!expiryDate || expiryDate === 'N/A') return false;
+    
+    try {
+      // Parse date string (can be various formats)
+      const date = new Date(expiryDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      // License is expired if expiry date is before today
+      return date < today;
+    } catch (e) {
+      return false;
+    }
   };
 
   // Filter drivers
@@ -336,7 +357,16 @@ export default function DriverPerformance() {
                           <tr key={driver.id} className="hover:bg-slate-700/50 transition-colors">
                             <td className="px-6 py-4 text-sm font-medium text-slate-100">{driver.name}</td>
                             <td className="px-6 py-4 text-sm text-slate-300">{driver.licenseNumber}</td>
-                            <td className="px-6 py-4 text-sm text-slate-300">{driver.expiryDate}</td>
+                            <td className="px-6 py-4 text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className={isLicenseExpired(driver.expiryDate) ? 'text-red-400' : 'text-slate-300'}>
+                                  {driver.expiryDate}
+                                </span>
+                                {isLicenseExpired(driver.expiryDate) && (
+                                  <AlertCircle size={16} className="text-red-400" />
+                                )}
+                              </div>
+                            </td>
                             <td className="px-6 py-4 text-sm text-amber-400">{driver.completionRate}</td>
                             <td className={`px-6 py-4 text-sm font-semibold ${getSafetyScoreColor(driver.safetyScore)}`}>
                               {driver.safetyScore}
@@ -371,7 +401,16 @@ export default function DriverPerformance() {
                       <tr key={driver.id} className="hover:bg-slate-700/50 transition-colors">
                         <td className="px-6 py-4 text-sm font-medium text-slate-100">{driver.name}</td>
                         <td className="px-6 py-4 text-sm text-slate-300">{driver.licenseNumber}</td>
-                        <td className="px-6 py-4 text-sm text-slate-300">{driver.expiryDate}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className={isLicenseExpired(driver.expiryDate) ? 'text-red-400' : 'text-slate-300'}>
+                              {driver.expiryDate}
+                            </span>
+                            {isLicenseExpired(driver.expiryDate) && (
+                              <AlertCircle size={16} className="text-red-400" />
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 text-sm text-amber-400">{driver.completionRate}</td>
                         <td className={`px-6 py-4 text-sm font-semibold ${getSafetyScoreColor(driver.safetyScore)}`}>
                           {driver.safetyScore}
@@ -421,9 +460,11 @@ export default function DriverPerformance() {
         onClose={() => {
           setIsFormOpen(false);
           setEditingDriver(null);
+          setError("");
         }} 
         onSubmit={handleAddDriver}
         editingDriver={editingDriver}
+        externalError={error}
       />
     </div>
   );
