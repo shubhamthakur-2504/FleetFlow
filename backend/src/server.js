@@ -7,6 +7,7 @@ import { PORT, CLIENT_URL } from "./constant.js";
 
 import userRouter from "./routes/user.route.js";
 import vehicleRouter from "./routes/vehicle.route.js";
+import tripRouter from "./routes/trip.route.js";
 const app = express();
 
 
@@ -29,6 +30,7 @@ app.get("/health", (req, res) => {
 
 app.use("/api/auth", userRouter);
 app.use("/api/vehicles", vehicleRouter);
+app.use("/api/trips", tripRouter);
 
 // Global Error Handler Middleware
 app.use((err, req, res, next) => {
