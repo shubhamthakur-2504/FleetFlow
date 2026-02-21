@@ -45,6 +45,15 @@ export const createTrip = asyncHandler(async (req, res) => {
     throw new apiError("Driver not found", 404);
   }
 
+  // Check driver compliance - License must not be expired
+  const today = new Date();
+  if (new Date(driver.licenseExpiry) < today) {
+    throw new apiError(
+      `Cannot assign driver with expired license. License expired on ${driver.licenseExpiry.toLocaleDateString()}`,
+      400
+    );
+  }
+
   if (driver.status === "Suspended") {
     throw new apiError("Cannot assign suspended driver to trip", 400);
   }
@@ -93,6 +102,24 @@ export const dispatchTrip = asyncHandler(async (req, res) => {
   if (trip.status !== "Draft") {
     throw new apiError(
       `Cannot dispatch trip with status "${trip.status}". Only Draft trips can be dispatched.`,
+      400
+    );
+  }
+
+  // Re-validate driver compliance before dispatch
+  // License must not be expired (could have expired since trip creation)
+  const today = new Date();
+  if (new Date(trip.driver.licenseExpiry) < today) {
+    throw new apiError(
+      `Cannot dispatch trip. Driver's license expired on ${trip.driver.licenseExpiry.toLocaleDateString()}. Must update driver record first.`,
+      400
+    );
+  }
+
+  // Driver must not be suspended
+  if (trip.driver.status === "Suspended") {
+    throw new apiError(
+      "Cannot dispatch trip. Assigned driver is suspended. Contact Safety Officer.",
       400
     );
   }
