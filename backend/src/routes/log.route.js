@@ -22,12 +22,13 @@ router.use(verifyJWT);
 
 /**
  * POST /api/logs
- * Create a maintenance or fuel log (ADMIN, SAFETY_OFFICER)
- * Safety Officer manages compliance including maintenance records
+ * Create a maintenance or fuel log (ADMIN, FLEET_MANAGER)
+ * Fleet Manager manages vehicle health and maintenance intake
+ * Maintenance logs auto-change vehicle status to "In Shop"
  */
 router.post(
   "/",
-  authorize("ADMIN", "SAFETY_OFFICER"),
+  authorize("ADMIN", "FLEET_MANAGER"),
   createLogValidators(),
   validatorMiddleware,
   createLog
@@ -57,13 +58,12 @@ router.get("/:id", getLogById);
 
 /**
  * PATCH /api/logs/:id
- * Update log details (ADMIN, SAFETY_OFFICER)
- * Safety Officer can correct compliance records
- * Fleet Manager cannot modify - read-only access enforced here
+ * Update log details (ADMIN, FLEET_MANAGER)
+ * Fleet Manager can update maintenance records during service workflow
  */
 router.patch(
   "/:id",
-  authorize("ADMIN", "SAFETY_OFFICER"),
+  authorize("ADMIN", "FLEET_MANAGER"),
   updateLogValidators(),
   validatorMiddleware,
   updateLog
@@ -71,13 +71,13 @@ router.patch(
 
 /**
  * DELETE /api/logs/:id
- * Delete a log entry (ADMIN, SAFETY_OFFICER)
- * Careful operation affecting financial and compliance records
- * Fleet Manager cannot delete - prevents accidental removal
+ * Delete a log entry (ADMIN, FLEET_MANAGER)
+ * Fleet Manager removes maintenance logs to restore vehicle availability
+ * Deleting maintenance log restores vehicle status to "Available"
  */
 router.delete(
   "/:id",
-  authorize("ADMIN", "SAFETY_OFFICER"),
+  authorize("ADMIN", "FLEET_MANAGER"),
   deleteLog
 );
 

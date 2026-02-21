@@ -4,7 +4,9 @@ import { apiError } from "../utils/api-error.js";
 
 /**
  * CREATE LOG - Record maintenance or fuel log for a vehicle
- * Safety Officer and Admin can create logs for compliance/maintenance tracking
+ * Fleet Manager can create logs for vehicle health tracking
+ * Auto-logic: Maintenance logs change vehicle status to "In Shop"
+ * Fuel logs do not change status
  */
 export const createLog = asyncHandler(async (req, res) => {
   const { vehicleId, type, cost, liters } = req.body;
@@ -37,22 +39,63 @@ export const createLog = asyncHandler(async (req, res) => {
     throw new apiError("Liters consumed must be provided for fuel logs", 400);
   }
 
-  const log = await prisma.log.create({
-    data: {
-      vehicleId: parseInt(vehicleId),
-      type,
-      cost: parseFloat(cost),
-      liters: type === "Fuel" ? parseFloat(liters) : null,
-      date: new Date()
-    },
-    include: {
-      vehicle: { select: { licensePlate: true, model: true } }
+  // Prevent maintenance on vehicles already in shop (avoid duplicate entries)
+  if (type === "Maintenance" && vehicle.status === "In Shop") {
+    throw new apiError(
+      "Vehicle is already in shop. Complete current maintenance before adding another service log.",
+      400
+    );
+  }
+
+  // Prevent maintenance on vehicles with active dispatched trips
+  if (type === "Maintenance") {
+    const activeTrip = await prisma.trip.findFirst({
+      where: {
+        vehicleId: parseInt(vehicleId),
+        status: "Dispatched"
+      }
+    });
+
+    if (activeTrip) {
+      throw new apiError(
+        "Cannot create maintenance log for vehicle with active trip. Complete or cancel the trip first.",
+        400
+      );
     }
+  }
+
+  // Use transaction to create log and optionally update vehicle status
+  const log = await prisma.$transaction(async (tx) => {
+    // Create the log entry
+    const newLog = await tx.log.create({
+      data: {
+        vehicleId: parseInt(vehicleId),
+        type,
+        cost: parseFloat(cost),
+        liters: type === "Fuel" ? parseFloat(liters) : null,
+        date: new Date()
+      },
+      include: {
+        vehicle: { select: { licensePlate: true, model: true } }
+      }
+    });
+
+    // If maintenance log, auto-update vehicle status to "In Shop"
+    if (type === "Maintenance") {
+      await tx.vehicle.update({
+        where: { id: parseInt(vehicleId) },
+        data: { status: "In Shop" }
+      });
+    }
+
+    return newLog;
   });
 
   return res.status(201).json({
     success: true,
-    message: `${type} log created successfully`,
+    message: type === "Maintenance" 
+      ? `Maintenance log created. Vehicle status changed to "In Shop".` 
+      : `${type} log created successfully`,
     data: log
   });
 });
@@ -223,8 +266,9 @@ export const updateLog = asyncHandler(async (req, res) => {
 
 /**
  * DELETE LOG - Remove a log entry
- * Only Safety Officer and Admin can delete logs
- * Careful operation - affects financial records and compliance audit trail
+ * Fleet Manager and Admin can delete logs for maintenance workflow
+ * Auto-logic: Deleting maintenance log restores vehicle status to "Available"
+ * Careful operation - affects financial records and vehicle availability
  */
 export const deleteLog = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -238,13 +282,43 @@ export const deleteLog = asyncHandler(async (req, res) => {
     throw new apiError("Log not found", 404);
   }
 
-  await prisma.log.delete({
-    where: { id: parseInt(id) }
+  // Use transaction to delete log and optionally restore vehicle status
+  const deletedLogInfo = await prisma.$transaction(async (tx) => {
+    const logToDelete = await tx.log.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    // Delete the log
+    await tx.log.delete({
+      where: { id: parseInt(id) }
+    });
+
+    // If maintenance log, check if there are other maintenance logs for this vehicle
+    if (logToDelete.type === "Maintenance") {
+      const otherMaintenanceLogs = await tx.log.findMany({
+        where: {
+          vehicleId: logToDelete.vehicleId,
+          type: "Maintenance"
+        }
+      });
+
+      // Only restore status to Available if no other maintenance logs exist
+      if (otherMaintenanceLogs.length === 0) {
+        await tx.vehicle.update({
+          where: { id: logToDelete.vehicleId },
+          data: { status: "Available" }
+        });
+      }
+    }
+
+    return logToDelete;
   });
 
   return res.status(200).json({
     success: true,
-    message: "Log deleted successfully",
+    message: deletedLogInfo.type === "Maintenance"
+      ? "Maintenance log deleted. Vehicle status restored to Available."
+      : "Fuel log deleted successfully",
     data: { id: parseInt(id) }
   });
 });

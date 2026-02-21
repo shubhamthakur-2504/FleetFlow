@@ -22,6 +22,13 @@ export const createTrip = asyncHandler(async (req, res) => {
     throw new apiError("Cannot create trip with a retired vehicle", 400);
   }
 
+  if (vehicle.status === "In Shop") {
+    throw new apiError(
+      "Vehicle is currently in service/maintenance. Complete maintenance before creating trips.",
+      400
+    );
+  }
+
   if (cargoWeight > vehicle.maxLoad) {
     throw new apiError(
       `Cargo weight (${cargoWeight}kg) exceeds vehicle capacity (${vehicle.maxLoad}kg)`,
@@ -102,6 +109,15 @@ export const dispatchTrip = asyncHandler(async (req, res) => {
   if (trip.status !== "Draft") {
     throw new apiError(
       `Cannot dispatch trip with status "${trip.status}". Only Draft trips can be dispatched.`,
+      400
+    );
+  }
+
+  // Re-validate vehicle status before dispatch
+  // Vehicle must be Available (not in shop or retired)
+  if (trip.vehicle.status === "In Shop") {
+    throw new apiError(
+      "Cannot dispatch trip. Vehicle is in service/maintenance. Complete maintenance before dispatch.",
       400
     );
   }
