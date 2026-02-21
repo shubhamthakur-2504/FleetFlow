@@ -14,7 +14,7 @@ export const verifyJWT = async (req, res, next) => {
 
         const user = await prisma.user.findUnique({
             where: { id: decodedToken.id },
-            select: { id: true, email: true, userName: true } // Don't fetch password
+            select: { id: true, email: true, userName: true, role: true } 
         });
 
         if (!user) {
