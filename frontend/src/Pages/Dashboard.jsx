@@ -10,9 +10,9 @@ export default function Dashboard() {
     { icon: "🚗", label: "Vehicle Registry", href: "/vehicle-registry" },
     { icon: "📍", label: "Trip Dispatcher", href: "/trip-dispatcher" },
     { icon: "🔧", label: "Maintenance", href: "/maintenance" },
-    { icon: "💰", label: "Trip & Expense", href: "#" },
-    { icon: "📈", label: "Performance", href: "#" },
-    { icon: "📊", label: "Analytics", href: "#" },
+    { icon: "💰", label: "Expense Logging", href: "/expense-logging" },
+    { icon: "📈", label: "Driver Performance", href: "/driver-performance" },
+    { icon: "📊", label: "Analytics", href: "/analytics" },
   ];
 
   const tableData = [

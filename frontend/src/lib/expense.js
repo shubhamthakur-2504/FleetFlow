@@ -1,73 +1,37 @@
-import axios from 'axios';
+import api from "./api";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+export const expenseApi = {
+  getAllExpenses: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.vehicleId) params.append("vehicleId", filters.vehicleId);
+    if (filters.driverId) params.append("driverId", filters.driverId);
+    if (filters.startDate) params.append("startDate", filters.startDate);
+    if (filters.endDate) params.append("endDate", filters.endDate);
 
-export const getAllExpenses = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/expenses`);
+    const response = await api.get(`/api/expenses${params.toString() ? "?" + params.toString() : ""}`);
     return response.data;
-  } catch (error) {
-    console.error('Error fetching expenses:', error);
-    throw error;
-  }
-};
+  },
 
-export const getExpenseById = async (expenseId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/expenses/${expenseId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching expense ${expenseId}:`, error);
-    throw error;
-  }
-};
+  getExpenseSummary: async (month, year) => {
+    const params = new URLSearchParams();
+    if (month) params.append("month", month);
+    if (year) params.append("year", year);
 
-export const createExpense = async (expenseData) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/expenses`, expenseData);
+    const response = await api.get(`/api/expenses/summary${params.toString() ? "?" + params.toString() : ""}`);
     return response.data;
-  } catch (error) {
-    console.error('Error creating expense:', error);
-    throw error;
-  }
-};
+  },
 
-export const updateExpense = async (expenseId, expenseData) => {
-  try {
-    const response = await axios.put(`${API_BASE_URL}/expenses/${expenseId}`, expenseData);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating expense ${expenseId}:`, error);
-    throw error;
-  }
-};
+  getVehicleExpenses: async (vehicleId, filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.startDate) params.append("startDate", filters.startDate);
+    if (filters.endDate) params.append("endDate", filters.endDate);
 
-export const updateExpenseStatus = async (expenseId, status) => {
-  try {
-    const response = await axios.patch(`${API_BASE_URL}/expenses/${expenseId}/status`, { status });
+    const response = await api.get(`/api/expenses/vehicle/${vehicleId}${params.toString() ? "?" + params.toString() : ""}`);
     return response.data;
-  } catch (error) {
-    console.error(`Error updating expense status:`, error);
-    throw error;
-  }
-};
+  },
 
-export const deleteExpense = async (expenseId) => {
-  try {
-    const response = await axios.delete(`${API_BASE_URL}/expenses/${expenseId}`);
+  getDriverExpenses: async (driverId) => {
+    const response = await api.get(`/api/expenses/driver/${driverId}`);
     return response.data;
-  } catch (error) {
-    console.error(`Error deleting expense ${expenseId}:`, error);
-    throw error;
-  }
-};
-
-export const getTripsExpenceHistory = async (tripId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/expenses/trip/${tripId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching expense history for trip ${tripId}:`, error);
-    throw error;
   }
 };
