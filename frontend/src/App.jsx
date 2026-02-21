@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import Login from './Pages/Login'
 import Register from './Pages/Register'
 import Dashboard from './Pages/Dashboard'
@@ -10,6 +11,30 @@ import Analytics from './Pages/Analytics'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 export default function App() {
+  // Keep backend alive on Render by pinging health endpoint every 12 minutes
+  useEffect(() => {
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    
+    // Ping health endpoint on app load
+    const pingHealth = async () => {
+      try {
+        await fetch(`${API_BASE_URL}/health`, { method: 'GET' });
+      } catch (error) {
+        console.log('Health check ping sent');
+      }
+    };
+
+    // Initial ping
+    pingHealth();
+
+    // Set interval to ping every 12 minutes (720000ms)
+    const interval = setInterval(() => {
+      pingHealth();
+    }, 720000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Router>
       <Routes>
