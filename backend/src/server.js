@@ -11,6 +11,7 @@ import driverRouter from "./routes/driver.route.js";
 import tripRouter from "./routes/trip.route.js";
 import logRouter from "./routes/log.route.js";
 import expenseRouter from "./routes/expense.route.js";
+import analyticsRouter from "./routes/analytics.route.js";
 const app = express();
 
 
@@ -37,6 +38,7 @@ app.use("/api/drivers", driverRouter);
 app.use("/api/trips", tripRouter);
 app.use("/api/logs", logRouter);
 app.use("/api/expenses", expenseRouter);
+app.use("/api/analytics", analyticsRouter);
 
 // Global Error Handler Middleware
 app.use((err, req, res, next) => {
