@@ -25,7 +25,7 @@ export default function Analytics() {
   // Data states
   const [timeSeriesData, setTimeSeriesData] = useState([]);
   const [costliestVehicles, setCostliestVehicles] = useState([]);
-  const [utilizationData, setUtilizationData] = useState([]);
+  const [utilizationData, setUtilizationData] = useState(null);
   const [overallMetrics, setOverallMetrics] = useState(null);
   const [financialSummary, setFinancialSummary] = useState(null);
 
@@ -310,16 +310,16 @@ export default function Analytics() {
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie
-                      data={utilizationData}
+                      data={utilizationData?.utilizationChart || []}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}%`}
+                      label={({ name, value }) => `${name}: ${value}`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {utilizationData.map((entry, index) => (
+                      {(utilizationData?.utilizationChart || []).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
