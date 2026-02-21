@@ -62,7 +62,7 @@ export default function VehicleRegistry() {
     { icon: "📊", label: "Dashboard", href: "/dashboard" },
     { icon: "🚗", label: "Vehicle Registry", href: "/vehicle-registry" },
     { icon: "📍", label: "Trip Dispatcher", href: "/trip-dispatcher" },
-    { icon: "🔧", label: "Maintenance", href: "#" },
+    { icon: "🔧", label: "Maintenance", href: "/maintenance" },
     { icon: "💰", label: "Trip & Expense", href: "#" },
     { icon: "📈", label: "Performance", href: "#" },
     { icon: "📊", label: "Analytics", href: "#" },
