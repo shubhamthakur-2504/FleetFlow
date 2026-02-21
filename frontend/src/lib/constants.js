@@ -14,6 +14,14 @@ export const VEHICLE_STATUSES = [
   { value: "out_of_service", label: "Out of Service" },
 ];
 
+// Trip Statuses - Must match backend Prisma schema enum
+export const TRIP_STATUSES = [
+  { value: "Draft", label: "Draft" },
+  { value: "Dispatched", label: "On Way" },
+  { value: "Completed", label: "Completed" },
+  { value: "Cancelled", label: "Cancelled" },
+];
+
 // User Roles - Must match backend Prisma schema enum
 export const USER_ROLES = [
   { value: "ADMIN", label: "Admin" },

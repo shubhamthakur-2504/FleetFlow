@@ -16,7 +16,7 @@ export const authApi = {
   },
 
   getUser: async () => {
-    const response = await api.get("/api/auth/get-user");
+    const response = await api.get("/api/auth/profile");
     return response.data;
   },
 
