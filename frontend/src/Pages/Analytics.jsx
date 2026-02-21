@@ -341,23 +341,31 @@ export default function Analytics() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-slate-700">
-                      <th className="text-left px-4 py-3 text-sm font-semibold text-amber-400">Month</th>
+                      <th className="text-left px-4 py-3 text-sm font-semibold text-amber-400">Period</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-amber-400">Revenue</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-amber-400">Fuel Cost</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-amber-400">Maintenance</th>
                       <th className="text-left px-4 py-3 text-sm font-semibold text-amber-400">Net Profit</th>
+                      <th className="text-left px-4 py-3 text-sm font-semibold text-amber-400">ROI</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-700">
-                    {financialSummary.map((row, index) => (
-                      <tr key={index} className="hover:bg-slate-700/50 transition-colors">
-                        <td className="px-4 py-3 text-sm text-slate-100">{row.month}</td>
-                        <td className="px-4 py-3 text-sm text-green-400 font-medium">Rs. {row.revenue.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-sm text-red-400 font-medium">Rs. {row.fuelCost.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-sm text-orange-400 font-medium">Rs. {row.maintenance.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-sm text-blue-400 font-medium">Rs. {row.netProfit.toLocaleString()}</td>
+                    {timeSeriesData && timeSeriesData.length > 0 ? (
+                      timeSeriesData.map((row, index) => (
+                        <tr key={index} className="hover:bg-slate-700/50 transition-colors">
+                          <td className="px-4 py-3 text-sm text-slate-100">{row.period}</td>
+                          <td className="px-4 py-3 text-sm text-green-400 font-medium">₹ {row.revenue?.toLocaleString() || '0'}</td>
+                          <td className="px-4 py-3 text-sm text-red-400 font-medium">₹ {row.fuelCost?.toLocaleString() || '0'}</td>
+                          <td className="px-4 py-3 text-sm text-orange-400 font-medium">₹ {row.maintenanceCost?.toLocaleString() || '0'}</td>
+                          <td className="px-4 py-3 text-sm text-blue-400 font-medium">₹ {(row.revenue - row.fuelCost - row.maintenanceCost)?.toLocaleString() || '0'}</td>
+                          <td className="px-4 py-3 text-sm text-purple-400 font-medium">{row.roi || 0}%</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="px-4 py-3 text-center text-slate-400">No data available</td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
