@@ -163,11 +163,23 @@ frontend/
 )}
 ```
 
-### Roles
-- **ADMIN** - Full access
-- **FLEET_MANAGER** - Fleet & trip management
-- **DISPATCHER** - Trip creation & dispatch
-- **DRIVER** - View-only access
+### Available Roles
+
+**👨‍💼 ADMIN** - Full system access
+- User management & system configuration
+- All operational capabilities
+
+**🚛 FLEET_MANAGER** - Fleet operations
+- Vehicle health & lifecycle management
+- Driver management & compliance
+- Trip dispatch & completion
+- Analytics & reporting
+
+**📍 DISPATCHER** - Daily operations
+- Create and dispatch trips
+- Assign drivers to vehicles
+- Complete trips & record metrics
+- Cannot: Manage drivers/vehicles, view analytics
 
 ---
 

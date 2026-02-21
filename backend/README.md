@@ -468,33 +468,57 @@ Response: { success: true, data: [ expenses ] }
 
 ## 🔐 User Roles & Permissions
 
+### Permission Matrix
 ```
-ADMIN
-  ├─ Create trips
-  ├─ Dispatch trips
-  ├─ Complete trips
-  ├─ Create drivers
-  ├─ Edit vehicles
-  ├─ View all analytics
-  └─ Full system access
+ADMIN (System Administrator)
+  ├─ ✅ Create trips
+  ├─ ✅ Dispatch trips
+  ├─ ✅ Complete trips
+  ├─ ✅ Create drivers & vehicles
+  ├─ ✅ Edit all vehicles
+  ├─ ✅ View all analytics
+  ├─ ✅ User management
+  └─ ✅ Full system access
 
-FLEET_MANAGER
-  ├─ Dispatch trips
-  ├─ Complete trips
-  ├─ Create drivers
-  ├─ Edit vehicles
-  ├─ View analytics
-  └─ Cannot create trips
+FLEET_MANAGER (Fleet Operations)
+  ├─ ❌ Create trips
+  ├─ ✅ Dispatch trips
+  ├─ ✅ Complete trips
+  ├─ ✅ Create drivers & manage lifecycle
+  ├─ ✅ Edit vehicles (health, maintenance, scheduling)
+  ├─ ✅ View comprehensive analytics
+  └─ ✅ Monitor fleet operations
 
-DISPATCHER
-  ├─ Create trips
-  ├─ Dispatch trips
-  ├─ Complete trips
-  └─ Cannot: Create drivers, Edit vehicles, View analytics
-
-DRIVER
-  └─ View own profile only
+DISPATCHER (Daily Operations)
+  ├─ ✅ Create trips daily
+  ├─ ✅ Dispatch trips to drivers
+  ├─ ✅ Complete trips & record metrics
+  ├─ ❌ Create drivers
+  ├─ ❌ Edit vehicles
+  └─ ❌ View analytics
 ```
+
+### Role Descriptions
+
+**👨‍💼 ADMIN**
+- Full system access and user management
+- System configuration and emergency overrides
+- Can perform all operations across the platform
+
+**🚛 FLEET_MANAGER** 
+- Oversee vehicle health & asset lifecycle
+- Monitor vehicle maintenance & scheduling
+- Create and manage driver records
+- View comprehensive fleet analytics
+- Dispatch and complete trips
+
+**📍 DISPATCHER**
+- Create trips and assign drivers
+- Dispatch trips to drivers for execution
+- Complete trips and record final metrics
+- Validate cargo loads against vehicle capacity
+- Monitor assigned vehicle real-time status
+
 
 ---
 
@@ -507,7 +531,7 @@ DRIVER
   name: String
   email: String (Unique)
   password: String (Hashed)
-  role: ADMIN | FLEET_MANAGER | DISPATCHER | DRIVER
+  role: ADMIN | FLEET_MANAGER | DISPATCHER
   createdAt: DateTime
   updatedAt: DateTime
 }
