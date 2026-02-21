@@ -32,12 +32,18 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (userName, password, email) => {
   // 1. Find user by username or email
+  const whereConditions = [];
+  
+  if (userName) whereConditions.push({ userName });
+  if (email) whereConditions.push({ email });
+  
+  if (whereConditions.length === 0) {
+    throw new Error("Username or email is required");
+  }
+  
   const user = await prisma.user.findFirst({
     where: {
-      OR: [
-        { userName },
-        { email }
-      ]
+      OR: whereConditions
     }
   });
 

@@ -6,6 +6,7 @@ import prisma from "./db/prisma.js";
 import { PORT, CLIENT_URL } from "./constant.js";
 
 import userRouter from "./routes/user.route.js";
+import vehicleRouter from "./routes/vehicle.route.js";
 const app = express();
 
 
@@ -26,7 +27,8 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK", message: "Server is running" });
 });
 
-app.use("/api/v1/users", userRouter);
+app.use("/api/auth", userRouter);
+app.use("/api/vehicles", vehicleRouter);
 
 // Global Error Handler Middleware
 app.use((err, req, res, next) => {
