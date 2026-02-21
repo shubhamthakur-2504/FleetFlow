@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  FLEET_MANAGER
+  DISPATCHER
+  SAFETY_OFFICER
+  FINANCIAL_ANALYSTS
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userName String @unique
+  email    String @unique
+  password String
+  role     UserRole 
+
+  // Authentication & Session
+  refreshToken String?
+
+  // Forgot Password flow
+  forgotPasswordToken       String?
+  forgotPasswordTokenExpiry DateTime?
+
+  @@index([userName])
+}
+
+model Vehicle {
+  id               Int      @id @default(autoincrement())
+  model            String
+  licensePlate     String   @unique
+  maxLoad          Float
+  type             String   // Truck, Van, Bike 
+  status           String   @default("Available") // Available, In Shop, On Trip [cite: 32, 52]
+  odometer         Float
+  acquisitionCost  Float    @default(0.0)
+  isRetired        Boolean  @default(false) 
+  trips            Trip[]
+  logs             Log[]
+}
+
+model Driver {
+  id             Int      @id @default(autoincrement())
+  name           String
+  licenseExpiry  DateTime
+  status         String   @default("Off Duty") // On Duty, Off Duty, Suspended [cite: 41]
+  safetyScore    Float    @default(100.0)
+  trips          Trip[]
+}
+
+model Trip {
+  id            Int      @id @default(autoincrement())
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
+  vehicleId     Int
+  driver        Driver   @relation(fields: [driverId], references: [id])
+  driverId      Int
+  cargoWeight   Float
+  status        String   @default("Draft") // Draft, Dispatched, Completed, Cancelled 
+  startOdo      Float
+  endOdo        Float?
+  revenue       Float    @default(0.0)
+}
+
+model Log {
+  id            Int      @id @default(autoincrement())
+  vehicle       Vehicle  @relation(fields: [vehicleId], references: [id])
+  vehicleId     Int
+  type          String   // Fuel or Maintenance
+  cost          Float
+  liters        Float?   // Fuel Efficiency 
+  date          DateTime @default(now())
+}
