@@ -275,33 +275,29 @@ export const getFinancialSummary = asyncHandler(async (req, res) => {
 });
 
 /**
- * GET VEHICLE UTILIZATION - Idle vs utilized
+ * GET VEHICLE UTILIZATION - Active (on trip) vs idle
  */
 export const getVehicleUtilization = asyncHandler(async (req, res) => {
-  const vehicles = await prisma.vehicle.findMany({
-    include: {
-      trips: true
-    }
-  });
+  const vehicles = await prisma.vehicle.findMany();
 
-  let utilized = 0;
-  let idle = 0;
-
-  vehicles.forEach((vehicle) => {
-    const completedTrips = vehicle.trips.filter((t) => t.status === "Completed");
-    if (completedTrips.length > 0) {
-      utilized += 1;
-    } else {
-      idle += 1;
-    }
-  });
+  // Count vehicles by status
+  const activeCount = vehicles.filter((v) => v.status === "On Trip").length;
+  const idleCount = vehicles.filter((v) => v.status === "Available").length;
+  const inShopCount = vehicles.filter((v) => v.status === "In Shop").length;
 
   return res.status(200).json({
     success: true,
     message: "Vehicle utilization retrieved successfully",
-    data: [
-      { name: "Utilized", value: utilized, color: "#10b981" },
-      { name: "Idle", value: idle, color: "#ef4444" }
-    ]
+    data: {
+      activeCount,
+      idleCount,
+      inShopCount,
+      totalVehicles: vehicles.length,
+      utilizationChart: [
+        { name: "On Trip", value: activeCount, color: "#10b981" },
+        { name: "Idle", value: idleCount, color: "#ef4444" },
+        { name: "In Shop", value: inShopCount, color: "#f59e0b" }
+      ]
+    }
   });
 });
