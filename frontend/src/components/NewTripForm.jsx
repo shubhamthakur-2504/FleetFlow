@@ -10,6 +10,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Helper function to check if license is expired
+const isLicenseExpired = (expiryDate) => {
+  if (!expiryDate) return true;
+  
+  try {
+    // Handle formats: "MM/YY", "MM/DD/YYYY", "MM/DD/YY"
+    const parts = expiryDate.split('/');
+    
+    if (parts.length < 2) return true;
+    
+    let month = parseInt(parts[0]);
+    let year = parseInt(parts[parts.length - 1]); // Last part is year
+    
+    if (isNaN(month) || isNaN(year)) return true;
+    
+    // If year is 2 digits, convert to 4 digits (00-99 -> 2000-2099)
+    if (year < 100) {
+      year = year < 50 ? 2000 + year : 1900 + year;
+    }
+    
+    // Create expiry date as last day of expiry month
+    const expiryDateObj = new Date(year, month, 0); // Last day of the month
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // License is expired if expiry date is before today
+    return expiryDateObj < today;
+  } catch (e) {
+    return true;
+  }
+};
+
 export default function NewTripForm({ vehicles, drivers, onSubmit, loading = false }) {
   const [form, setForm] = useState({
     vehicleId: "",
@@ -119,15 +151,22 @@ export default function NewTripForm({ vehicles, drivers, onSubmit, loading = fal
                 <SelectValue placeholder="Select a driver" />
               </SelectTrigger>
               <SelectContent className="bg-[#1E293B] border-slate-700 text-slate-100">
-                {drivers.map((d) => (
-                  <SelectItem
-                    key={d.id}
-                    value={d.id.toString()}
-                    className="focus:bg-amber-500/10 focus:text-amber-400"
-                  >
-                    {d.name}
-                  </SelectItem>
-                ))}
+                {drivers
+                  .filter((d) => !isLicenseExpired(d.expiryDate))
+                  .map((d) => (
+                    <SelectItem
+                      key={d.id}
+                      value={d.id.toString()}
+                      className="focus:bg-amber-500/10 focus:text-amber-400"
+                    >
+                      {d.name} (License: {d.expiryDate || 'N/A'})
+                    </SelectItem>
+                  ))}
+                {drivers.length > 0 && drivers.filter((d) => !isLicenseExpired(d.expiryDate)).length === 0 && (
+                  <div className="px-2 py-1.5 text-sm text-red-400">
+                    No drivers with valid licenses available
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>

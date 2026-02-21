@@ -50,7 +50,13 @@ export default function TripDispatcher() {
         
         setTrips(tripsRes.data || []);
         setVehicles(vehiclesRes.data || []);
-        setDrivers(driversRes.data || []);
+        
+        // Format drivers to include expiryDate for frontend compatibility
+        const formattedDrivers = (driversRes.data || []).map(driver => ({
+          ...driver,
+          expiryDate: driver.licenseExpiry ? new Date(driver.licenseExpiry).toLocaleDateString() : 'N/A'
+        }));
+        setDrivers(formattedDrivers);
         setUser(userRes.data);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -397,9 +403,18 @@ export default function TripDispatcher() {
                                   {trip.status === "Draft" && canDispatch() && (
                                     <button
                                       onClick={() => handleDispatch(trip.id)}
-                                      disabled={actionLoading[trip.id] !== null}
+                                      disabled={actionLoading[trip.id] !== null && actionLoading[trip.id] !== undefined}
                                       className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                       title="Dispatch trip"
+                                    >
+                                      <Play size={16} />
+                                    </button>
+                                  )}
+                                  {!canDispatch() && trip.status === "Draft" && (
+                                    <button
+                                      disabled
+                                      className="p-2 rounded-lg bg-gray-500/20 text-gray-400 cursor-not-allowed transition-colors"
+                                      title={`Only ADMIN, FLEET_MANAGER, DISPATCHER can dispatch. Your role: ${user?.role || 'Unknown'}`}
                                     >
                                       <Play size={16} />
                                     </button>
@@ -407,9 +422,27 @@ export default function TripDispatcher() {
                                   {trip.status === "Dispatched" && canComplete() && (
                                     <button
                                       onClick={() => handleComplete(trip.id)}
-                                      disabled={actionLoading[trip.id] !== null}
+                                      disabled={actionLoading[trip.id] !== null && actionLoading[trip.id] !== undefined}
                                       className="p-2 rounded-lg bg-green-500/20 hover:bg-green-500/30 text-green-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                       title="Complete trip"
+                                    >
+                                      <CheckSquare size={16} />
+                                    </button>
+                                  )}
+                                  {!canComplete() && trip.status === "Dispatched" && (
+                                    <button
+                                      disabled
+                                      className="p-2 rounded-lg bg-gray-500/20 text-gray-400 cursor-not-allowed transition-colors"
+                                      title={`Only ADMIN, FLEET_MANAGER, DISPATCHER can complete. Your role: ${user?.role || 'Unknown'}`}
+                                    >
+                                      <CheckSquare size={16} />
+                                    </button>
+                                  )}
+                                  {trip.status !== "Dispatched" && trip.status !== "Draft" && (
+                                    <button
+                                      disabled
+                                      className="p-2 rounded-lg bg-gray-500/20 text-gray-400 cursor-not-allowed transition-colors"
+                                      title={`Trip status: ${trip.status}. Can only complete "Dispatched" trips.`}
                                     >
                                       <CheckSquare size={16} />
                                     </button>
